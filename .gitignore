@@ -1,0 +1,14 @@
+# intellij idea configurations
+*.iml
+.idea/
+# eclipse configurations
+.settings/
+.classpath
+.project
+# maven build directory
+target/
+# other build directories
+bin/
+/build/
+# svn configurations
+.svn/

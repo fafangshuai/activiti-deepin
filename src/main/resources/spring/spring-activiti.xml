@@ -1,0 +1,43 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <import resource="spring-db.xml"/>
+
+  <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper"/>
+
+  <bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+    <property name="dataSource" ref="dataSource"/>
+    <property name="transactionManager" ref="txManager"/>
+    <!--初始化数据表-->
+    <property name="databaseSchemaUpdate" value="true"/>
+    <!--历史记录级别，full为所有-->
+    <property name="history" value="none"/>
+    <!--允许异步执行-->
+    <!--<property name="asyncExecutorEnabled" value="true" />
+    <property name="asyncExecutorActivate" value="true" />-->
+
+    <!--<property name="jobExecutorActivate" value="true"/>-->
+    <!--解决乱码问题-->
+    <property name="activityFontName" value="宋体"/>
+    <property name="labelFontName" value="宋体"/>
+  </bean>
+
+  <!-- 引擎内部提供的UUID生成器，依赖fastxml的java-uuid-generator模块 -->
+  <bean id="uuidGenerator" class="org.activiti.engine.impl.persistence.StrongUuidGenerator"/>
+
+  <!--引擎类-->
+  <bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+    <property name="processEngineConfiguration" ref="processEngineConfiguration"/>
+  </bean>
+
+  <!-- 7大接口 -->
+  <bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService"/>
+  <bean id="runtimeService" factory-bean="processEngine" factory-method="getRuntimeService"/>
+  <bean id="formService" factory-bean="processEngine" factory-method="getFormService"/>
+  <bean id="identityService" factory-bean="processEngine" factory-method="getIdentityService"/>
+  <bean id="taskService" factory-bean="processEngine" factory-method="getTaskService"/>
+  <bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService"/>
+  <bean id="managementService" factory-bean="processEngine" factory-method="getManagementService"/>
+</beans>
