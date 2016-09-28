@@ -52,6 +52,46 @@
         "ActivitiesMorph",
         "all"
       ]
+    },
+    {
+      "type": "edge",
+      "id": "SequenceFlow2",
+      "title": "Sequence flow 2",
+      "description": "Sequence flow defines the execution order of activities.",
+      "view": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n<svg\r\n\txmlns=\"http://www.w3.org/2000/svg\"\r\n\txmlns:oryx=\"http://www.b3mn.org/oryx\"\r\n\tversion=\"1.0\"\r\n\toryx:edge=\"edge\" >\r\n\t<defs>\r\n\t  \t<marker id=\"start\" refX=\"1\" refY=\"5\" markerUnits=\"userSpaceOnUse\" markerWidth=\"17\" markerHeight=\"11\" orient=\"auto\">\r\n\t  \t\t<!-- <path id=\"conditional\"   d=\"M 0 6 L 8 1 L 15 5 L 8 9 L 1 5\" fill=\"white\" stroke=\"black\" stroke-width=\"1\" /> -->\r\n\t\t\t<path id=\"default\" d=\"M 5 0 L 11 10\" fill=\"white\" stroke=\"#585858\" stroke-width=\"1\" />\r\n\t  \t</marker>\r\n\t  \t<marker id=\"end\" refX=\"15\" refY=\"6\" markerUnits=\"userSpaceOnUse\" markerWidth=\"15\" markerHeight=\"12\" orient=\"auto\">\r\n\t  \t\t<path id=\"arrowhead\" d=\"M 0 1 L 15 6 L 0 11z\" fill=\"#585858\" stroke=\"#585858\" stroke-linejoin=\"round\" stroke-width=\"2\" />\r\n\t  \t</marker>\r\n\t</defs>\r\n\t<g id=\"edge\">\r\n\t\t<path id=\"bg_frame\" d=\"M10 50 L210 50\" stroke=\"#585858\" fill=\"none\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" marker-start=\"url(#start)\" marker-end=\"url(#end)\" />\r\n\t\t<text id=\"text_name\" x=\"0\" y=\"0\" oryx:edgePosition=\"startTop\"/>\r\n\t</g>\r\n</svg>",
+      "icon": "connector/sequenceflow.png",
+      "groups": [
+        "定制"
+      ],
+      "layout": [
+        {
+          "type": "layout.bpmn2_0.sequenceflow"
+        }
+      ],
+      "propertyPackages": [
+        "overrideidpackage",
+        "namepackage"
+      ],
+      "hiddenPropertyPackages": [],
+      "roles": [
+        "ConnectingObjectsMorph",
+        "all"
+      ]
     }
-  ]
+  ],
+  "rules": {
+    "connectionRules": [
+      {
+        "role": "SequenceFlow2",
+        "connects": [
+          {
+            "from": "sequence_start",
+            "to": [
+              "sequence_end"
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

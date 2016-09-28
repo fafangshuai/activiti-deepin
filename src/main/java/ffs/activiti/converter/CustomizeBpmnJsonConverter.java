@@ -26,7 +26,7 @@ public class CustomizeBpmnJsonConverter extends BpmnJsonConverter {
   private static List<String> diRectanglesRef;
 
   static {
-    loadConfig();
+    initConfig();
     initDiRectangles();
     for (Map.Entry<Object, Object> entry : properties.entrySet()) {
       String nodeId = (String) entry.getKey();
@@ -52,7 +52,7 @@ public class CustomizeBpmnJsonConverter extends BpmnJsonConverter {
   /**
    * 加载配置
    */
-  private static void loadConfig() {
+  private static void initConfig() {
     try {
       properties.load(CustomizeBpmnJsonConverter.class.getClassLoader().getResourceAsStream("extensions.properties"));
     } catch (Exception e) {
