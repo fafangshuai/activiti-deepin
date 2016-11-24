@@ -129,6 +129,10 @@ public class ActivitiExtensionUtil {
     FlowElement flowElement = model.getFlowElement(activityId);
     // 获得自定义扩展
     Map<String, List<ExtensionElement>> extensionElementMap = flowElement.getExtensionElements();
+    if (extensionElementMap.isEmpty()) {
+      extensionItemsCache.put(cacheKey, extensionMap);
+      return extensionMap;
+    }
     List<ExtensionElement> extensionElementList = extensionElementMap.get(CUSTOM_EXTENSION_ELEM_NAME);
     for (ExtensionElement extensionElement : extensionElementList) {
       String name = extensionElement.getAttributeValue(null, CUSTOM_EXTENSION_ATTR_NAME);

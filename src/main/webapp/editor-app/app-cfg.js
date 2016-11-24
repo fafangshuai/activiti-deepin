@@ -21,16 +21,5 @@
 var ACTIVITI = ACTIVITI || {};
 
 ACTIVITI.CONFIG = {
-	'contextRoot' : getContextPath() + 'service'
+	'contextRoot' : CTX + '/service'
 };
-
-function getContextPath() {
-	var pathname = location.pathname;
-	if (pathname === "/") {
-		return "/";
-	}
-	if (pathname.lastIndexOf("/") === 0) {
-		return "/";
-	}
-	return "/" + pathname.split("/")[1];
-}

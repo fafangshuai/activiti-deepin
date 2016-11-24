@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration shutdownHook="disable">
     <properties>
-        <property name="pattern">%date{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{*.*..} - %msg%n%ex</property>
+        <property name="pattern">%date{yyyy-MM-dd HH:mm:ss} [%-5level] %class.%method{*.*..} - %msg%n%ex</property>
         <!--<property name="pattern">%date{yyyy-MM-dd HH:mm:ss} [%-5level] %class.%method(%file:%line) - %msg%n%ex</property>-->
     </properties>
     <appenders>

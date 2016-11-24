@@ -2,9 +2,10 @@ package ffs.activiti.biz;
 
 import ffs.activiti.util.ActivitiExtensionUtil;
 import ffs.chaos.util.Util;
+import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.Expression;
-import org.activiti.engine.impl.pvm.delegate.ActivityBehavior;
-import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
+import org.activiti.engine.delegate.JavaDelegate;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 
 import java.util.Map;
 
@@ -13,7 +14,7 @@ import java.util.Map;
  *
  * @author ffs
  */
-public class HelloTaskDelegate implements ActivityBehavior {
+public class HelloTaskDelegate implements JavaDelegate {
 
   private Expression text;
 
@@ -26,12 +27,12 @@ public class HelloTaskDelegate implements ActivityBehavior {
   }
 
   @Override
-  public void execute(ActivityExecution execution) throws Exception {
-    System.out.println("Hello, " + text.getExpressionText());
+  public void execute(DelegateExecution execution) throws Exception {
+    ExecutionEntity entity = (ExecutionEntity) execution;
     Map<String, Object> extensions = ActivitiExtensionUtil.getExtensions(execution.getEngineServices().getRepositoryService(),
-        execution.getProcessDefinitionId(), execution.getActivity().getId());
+        execution.getProcessDefinitionId(), entity.getActivity().getId());
     System.out.println("Extension Properties:");
     Util.printMap(extensions);
-    execution.takeAll(execution.getActivity().getOutgoingTransitions(), null);
+    System.out.println("Hello, " + text.getExpressionText());
   }
 }

@@ -1,0 +1,139 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Process List</title>
+  <link rel="stylesheet" href="static/bootstrap-3.3.0.css">
+</head>
+<body>
+<div class="container">
+  <h2>Process List</h2>
+  <p></p>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped text-nowrap">
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>ExecutionId</th>
+        <th>ProcessInstanceId</th>
+        <th>ProcessDefinitionId</th>
+        <th>ActivityName</th>
+        <th>Operation</th>
+      </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</div>
+<template id="procListTrTemplate">
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>
+      <button class="btn btn-primary btn-xs" data-type="view">View</button>
+    </td>
+  </tr>
+</template>
+
+<div id="diagramModal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="embed-responsive embed-responsive-16by9">
+        <iframe id="diagramViewer" class="embed-responsive-item"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="messageModal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="static/jquery-1.12.4.js"></script>
+<script src="static/bootstrap-3.3.0.js"></script>
+<script src="static/global.js"></script>
+<script type="text/javascript">
+  $(function () {
+    loadList();
+  });
+
+  function loadList() {
+    getListService(renderTable)
+  }
+
+  function handleResponse(response, callback) {
+    if (response.code == "-1") {
+      showMessage("服务器异常");
+    } else if (response.code == "0") {
+      callback(response.data);
+    }
+  }
+
+  function showMessage(msg) {
+    var msgModal = $("#messageModal");
+    msgModal.find("div.modal-body").html(msg);
+    msgModal.modal("show");
+  }
+
+  function getListService(callback) {
+    $.getJSON(BASE_URL + "/process/list", null, function (response) {
+      handleResponse(response, callback);
+    });
+  }
+
+  function diagramViewer(event) {
+    var procDefId = event.data.procDefId;
+    var procInstId = event.data.procInstId;
+    var url = BASE_URL + "/diagram-viewer/index.html?processDefinitionId=" + procDefId + "&processInstanceId=" + procInstId;
+//    $("#diagramViewer").attr("src", url);
+//    $("#diagramModal").modal("show");
+    window.open(url);
+  }
+
+  function renderTable(list) {
+    if (!list || list.length == 0) {
+      return;
+    }
+    var $template = $($("#procListTrTemplate").prop("content"));
+    var $tbody = $("table>tbody");
+    $tbody.empty();
+    $.each(list, function (i) {
+      var item = this;
+      try {
+        var $tr = $template.clone().find("tr");
+        var tds = $tr.find("td");
+        var j = 0;
+        fillTd(tds[j++], i + 1);
+        fillTd(tds[j++], item.id);
+        fillTd(tds[j++], item.processInstanceId);
+        fillTd(tds[j++], item.processDefinitionId);
+        fillTd(tds[j++], item.activityName);
+        $(tds[j++]).find("button[data-type='view']").on("click", {
+          procDefId: item.processDefinitionId,
+          procInstId: item.processInstanceId
+        }, diagramViewer);
+        $tbody.append($tr);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
+
+  function fillTd(td, text) {
+    $(td).html(text);
+  }
+
+</script>
+</body>
+</html>

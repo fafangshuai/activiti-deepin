@@ -13,7 +13,7 @@
     <!--初始化数据表-->
     <property name="databaseSchemaUpdate" value="true"/>
     <!--历史记录级别，full为所有-->
-    <property name="history" value="none"/>
+    <property name="history" value="audit"/>
     <!--允许异步执行-->
     <!--<property name="asyncExecutorEnabled" value="true" />
     <property name="asyncExecutorActivate" value="true" />-->

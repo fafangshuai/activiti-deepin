@@ -33,6 +33,7 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
 
 /**
  * 模型控制器
+ *
  * @author ffs
  */
 @Controller
@@ -60,8 +61,9 @@ public class ModelController {
 
   /**
    * 创建模型
+   *
    * @param name 名称
-   * @param key 标识
+   * @param key  标识
    * @param desc 描述
    */
   @RequestMapping("create")
@@ -96,6 +98,7 @@ public class ModelController {
 
   /**
    * 删除模型
+   *
    * @param modelId 模型Id
    */
   @RequestMapping("delete")
@@ -112,11 +115,12 @@ public class ModelController {
 
   /**
    * 根据模型部署流程
+   *
    * @param modelId 模型Id
    */
   @RequestMapping("deploy")
   @ResponseBody
-  public BaseResponse deploy(String modelId)  {
+  public BaseResponse deploy(String modelId) {
     try {
       Model model = repositoryService.getModel(modelId);
       ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(model.getId()));
@@ -134,8 +138,9 @@ public class ModelController {
 
   /**
    * 导出模型
+   *
    * @param modelId 模型Id
-   * @param type 类型
+   * @param type    类型
    */
   @RequestMapping("export")
   @ResponseBody
