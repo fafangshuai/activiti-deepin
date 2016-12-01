@@ -932,7 +932,21 @@ var ProcessDiagramGenerator = {
 			}
 			depthSelect.on("change", function () {
 				var depth = $(this).val();
-				location.href = location.href + "&depth=" + depth;
+				var paramArr = location.search.substring(1).split("&");
+				var reg = /^depth=\d$/;
+				var hasDepth = false;
+				var text = "depth=" + depth;
+				for (var i = 0, len = paramArr.length; i < len; i++) {
+					if (reg.test(paramArr[i])) {
+						hasDepth = true;
+						paramArr[i] = text;
+					}
+				}
+				if (!hasDepth) {
+					paramArr.push(text);
+				}
+				var search = paramArr.join("&");
+				location.href = location.pathname + "?" + search;
 			});
 			depthSelect.val(Addition.depth);
 			Addition.isInitDepthSelect = true;
@@ -1050,7 +1064,7 @@ var ProcessDiagramGenerator = {
 		} else {
 			Addition.hideDepthSelect();
 		}
-		
+
 		var ul = ProcessDiagramGenerator.diagramBreadCrumbs.one("ul");
 		ul.find("li").removeClass("selected");
 		li.addClass("selected");
