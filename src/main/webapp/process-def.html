@@ -21,6 +21,7 @@
         <th>Key</th>
         <th>Version</th>
         <th>DeploymentId</th>
+        <th>Operation</th>
       </tr>
       </thead>
       <tbody>
@@ -36,6 +37,9 @@
     <td></td>
     <td></td>
     <td></td>
+    <td>
+      <button class="btn btn-primary btn-xs" data-type="view">View</button>
+    </td>
   </tr>
 </template>
 
@@ -99,11 +103,22 @@
         fillTd(tds[j++], item.key);
         fillTd(tds[j++], item.version);
         fillTd(tds[j++], item.deploymentId);
+        $(tds[j++]).find("button[data-type='view']").on("click", {
+          procDefId: item.id
+        }, diagramViewer);
         $tbody.append($tr);
       } catch (error) {
         console.error(error);
       }
     });
+  }
+
+  function diagramViewer(event) {
+    var procDefId = event.data.procDefId;
+    var url = BASE_URL + "/diagram-viewer/index.html?processDefinitionId=" + procDefId;
+//    $("#diagramViewer").attr("src", url);
+//    $("#diagramModal").modal("show");
+    window.open(url);
   }
 
   function fillTd(td, text) {

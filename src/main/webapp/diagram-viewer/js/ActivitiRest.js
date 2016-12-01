@@ -23,8 +23,9 @@ var ActivitiRest = {
 		});
 	},
 	
-	getProcessDefinition: function(processDefinitionId, callback) {
-		var url = Lang.sub(this.options.processDefinitionUrl, {processDefinitionId: processDefinitionId});
+	getProcessDefinition: function(processDefinitionId, depth, callback) {
+		depth = depth ? depth : 1;
+		var url = Lang.sub(this.options.processDefinitionUrl, {processDefinitionId: processDefinitionId, depth: depth});
 		
 		$.ajax({
 			url: url,

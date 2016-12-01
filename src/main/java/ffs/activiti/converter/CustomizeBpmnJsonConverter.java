@@ -65,10 +65,10 @@ public class CustomizeBpmnJsonConverter extends BpmnJsonConverter {
    */
   @SuppressWarnings("unchecked")
   private static void initDiRectangles() {
-    Field field = getDiRectanglesField();
     try {
+      Field field = getDiRectanglesField();
       diRectanglesRef = (List<String>) field.get(null);
-    } catch (IllegalAccessException e) {
+    } catch (Exception e) {
       throw new RuntimeException("初始化出错", e);
     }
   }

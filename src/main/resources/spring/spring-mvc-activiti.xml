@@ -7,7 +7,7 @@
         http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
 
 	<!-- 扫描所需控制器：modeler组件、diagram组件 -->
-	<context:component-scan base-package="org.activiti.rest.editor,org.activiti.rest.diagram">
+	<context:component-scan base-package="org.activiti.rest.editor,ffs.activiti.rest.diagram.services">
 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
 	<mvc:annotation-driven />

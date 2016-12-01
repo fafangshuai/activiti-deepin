@@ -23,12 +23,22 @@
   <style type="text/css" media="screen">
     
   </style>
+  <style type="text/css">
+    .diagramOp {
+      padding-left: 5px;
+    }
+  </style>
 </head>
 <body>
 <div class="wrapper">
   <div id="pb1"></div>
   <div id="overlayBox" >
     <div id="diagramBreadCrumbs" class="diagramBreadCrumbs" onmousedown="return false" onselectstart="return false"></div>
+    <div class="diagramOp" id="diagramOp">
+      <select id="depthSelect">
+        <option value="1">折叠全部</option>
+      </select>
+    </div>
     <div id="diagramHolder" class="diagramHolder"></div>
     <div class="diagram-info" id="diagramInfo"></div>
   </div>
@@ -36,6 +46,17 @@
 <script language='javascript'>
 var DiagramGenerator = {};
 var pb1;
+var Addition = {
+  isInitDepthSelect: false,
+  depth: 1,
+  procDefId: null,
+  hideDepthSelect: function () {
+    $("#depthSelect").hide();
+  },
+  showDepthSelect: function () {
+    $("#depthSelect").show();
+  }
+};
 $(document).ready(function(){
   var query_string = {};
   var query = window.location.search.substring(1);
@@ -47,7 +68,9 @@ $(document).ready(function(){
   
   var processDefinitionId = query_string["processDefinitionId"];
   var processInstanceId = query_string["processInstanceId"];
-  
+  Addition.depth = query_string["depth"];
+  Addition.procDefId = processDefinitionId;
+
   console.log("Initialize progress bar");
   
   pb1 = new $.ProgressBar({
@@ -78,14 +101,25 @@ $(document).ready(function(){
         var mouseEvent = this;
         console.log("[CLICK] mouseEvent: %o, canvas: %o, clicked element: %o, contextObject: %o", mouseEvent, canvas, element, contextObject);
 
-        if (contextObject.getProperty("type") == "callActivity") {
+        var activityType = contextObject.getProperty("type");
+        if (activityType == "callActivity") {
           var processDefinitonKey = contextObject.getProperty("processDefinitonKey");
           var processDefinitons = contextObject.getProperty("processDefinitons");
           var processDefiniton = processDefinitons[0];
           console.log("Load callActivity '" + processDefiniton.processDefinitionKey + "', contextObject: ", contextObject);
 
           // Load processDefinition
-        ProcessDiagramGenerator.drawDiagram(processDefiniton.processDefinitionId);
+          ProcessDiagramGenerator.drawDiagram(processDefiniton.processDefinitionId);
+        } else if (activityType == "subProcess") {
+          var subProcessLayout = $.extend(true, {}, contextObject);
+          subProcessLayout.processDefinition = {};
+          var defId = "subProc." + contextObject.id;
+          subProcessLayout.processDefinition.id = defId;
+
+          // Hide all diagrams
+          var diagrams = $("#" + ProcessDiagramGenerator.options.diagramHolderId + " div.diagram");
+          diagrams.addClass("hidden");
+          ProcessDiagramGenerator._drawDiagram.apply({processDefinitionId: defId, diagramLayout: subProcessLayout});
         }
       },
       rightClick: function(canvas, element, contextObject){
@@ -120,12 +154,12 @@ $(document).ready(function(){
 
   ActivitiRest.options = {
     processInstanceHighLightsUrl: baseUrl + "/service/process-instance/{processInstanceId}/highlights?callback=?",
-    processDefinitionUrl: baseUrl + "/service/process-definition/{processDefinitionId}/diagram-layout?callback=?",
+    processDefinitionUrl: baseUrl + "/service/process-definition/{processDefinitionId}/diagram-layout/{depth}?callback=?",
     processDefinitionByKeyUrl: baseUrl + "/service/process-definition/{processDefinitionKey}/diagram-layout?callback=?"
   };
   
   if (processDefinitionId) {
-    ProcessDiagramGenerator.drawDiagram(processDefinitionId);
+    ProcessDiagramGenerator.drawDiagram(processDefinitionId, Addition.depth);
     
   } else {
     alert("processDefinitionId parameter is required");

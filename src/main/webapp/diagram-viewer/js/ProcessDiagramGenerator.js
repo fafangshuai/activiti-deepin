@@ -15,7 +15,37 @@ var ProcessDiagramGenerator = {
 	processDiagrams: {},
 	
 	diagramBreadCrumbs: null,
-	
+
+	shiftDiagram: function (diagramLayout) {
+		var xShift = Number.MAX_VALUE;
+		var yShift = Number.MAX_VALUE;
+		var padding = 20;
+		// 计算偏移位置，把图形移动到坐标轴左上角
+		$.each(diagramLayout.activities, function () {
+			if (this.x < xShift) {
+				xShift = this.x;
+			}
+			if (this.y < yShift) {
+				yShift = this.y;
+			}
+		});
+		// 填充边缘
+		xShift -= padding;
+		yShift -= padding;
+		// 移动活动
+		$.each(diagramLayout.activities, function () {
+			this.x -= xShift;
+			this.y -= yShift;
+		});
+		// 移动线
+		$.each(diagramLayout.sequenceFlows, function () {
+			this.xPointArray[0] -= xShift;
+			this.xPointArray[1] -= xShift;
+			this.yPointArray[0] -= yShift;
+			this.yPointArray[1] -= yShift;
+		});
+	},
+
 	init: function(){
 		// start event
 		this.activityDrawInstructions["startEvent"] = function(){
@@ -834,7 +864,7 @@ var ProcessDiagramGenerator = {
 	
 	// Load processDefinition
 	
-	drawDiagram: function(processDefinitionId) {
+	drawDiagram: function(processDefinitionId, depth) {
 		// Hide all diagrams
 		var diagrams = $("#" + this.options.diagramHolderId + " div.diagram");
 		diagrams.addClass("hidden");
@@ -845,12 +875,15 @@ var ProcessDiagramGenerator = {
 		if (processDefinitionId.indexOf(":") < 0) {
 			ActivitiRest.getProcessDefinitionByKey(processDefinitionId, this._drawDiagram);
 		} else {
-			this._drawDiagram.apply({processDefinitionId: processDefinitionId});
+			this._drawDiagram.apply({processDefinitionId: processDefinitionId, depth: depth});
 		}
 	},
 	_drawDiagram: function() {
 		var processDefinitionId = this.processDefinitionId;
-		
+		// 从本地数据组装的图形对象
+		var diagramLayout = this.diagramLayout;
+		var depth = this.depth;
+
 		ProcessDiagramGenerator.addBreadCrumbsItem(processDefinitionId);
 		
 		
@@ -873,15 +906,37 @@ var ProcessDiagramGenerator = {
 			return;
 		}
 
+		// 如果是本地数据，则直接画图
+		if (diagramLayout) {
+
+			ProcessDiagramGenerator.shiftDiagram(diagramLayout);
+			ProcessDiagramGenerator._generateDiagram.apply({processDefinitionDiagramLayout: diagramLayout});
+			return;
+		}
+
 		//console.time('loadDiagram');
 		
 		// Load processDefinition
 		
-		ActivitiRest.getProcessDefinition(processDefinitionId, ProcessDiagramGenerator._generateDiagram);
+		ActivitiRest.getProcessDefinition(processDefinitionId, depth, ProcessDiagramGenerator._generateDiagram);
 	},
 	_generateDiagram: function() {
 		var processDefinitionDiagramLayout = this.processDefinitionDiagramLayout;
-		
+		if (!Addition.isInitDepthSelect) {
+			var maxDepth = processDefinitionDiagramLayout.depth;
+			var depthSelect = $("#depthSelect");
+			for (var i = 2; i <= maxDepth; i++) {
+				var text = i == maxDepth ? "展开全部" : "展开第" + i + "层";
+				var option = $('<option value="' + i + '">' + text + '</option>');
+				depthSelect.append(option);
+			}
+			depthSelect.on("change", function () {
+				var depth = $(this).val();
+				location.href = location.href + "&depth=" + depth;
+			});
+			depthSelect.val(Addition.depth);
+			Addition.isInitDepthSelect = true;
+		}
 		//console.log("process-definition-diagram-layout["+processDefinitionDiagramLayout.processDefinition.id+"]: ", processDefinitionDiagramLayout);
 		
 		//console.timeEnd('loadDiagram');
@@ -919,22 +974,27 @@ var ProcessDiagramGenerator = {
 			return null;
 		}
 	},
-	
+
 	addBreadCrumbsItem: function(processDefinitionId){
+		if (processDefinitionId == Addition.procDefId) {
+			Addition.showDepthSelect();
+		} else {
+			Addition.hideDepthSelect();
+		}
+
 		var TPL_UL_CONTAINER = '<ul></ul>',
 			TPL_LI_CONTAINER = '<li id="{id}", processDefinitionId="{processDefinitionId}"><span>{name}</span></li>';
 		
 		if (!this.diagramBreadCrumbs)
 			this.diagramBreadCrumbs = $("#" + this.options.diagramBreadCrumbsId);
 		if (!this.diagramBreadCrumbs) return;
-		
-		
+
 		var ul = this.diagramBreadCrumbs.find("ul");
 		//console.log("ul: ", ul);
 		if (ul.size() == 0) {
 			ul = $(TPL_UL_CONTAINER);
 			this.diagramBreadCrumbs.append(ul);
-			
+
 		}
 		var liListOld = ul.find("li");
 		//console.warn("liListOld", liListOld);
@@ -984,6 +1044,12 @@ var ProcessDiagramGenerator = {
 			id = li.attr("id"),
 			processDefinitionId = li.attr("processDefinitionId");
 		//console.warn("_breadCrumbsItemClick: ", id, ", processDefinitionId: ", processDefinitionId);
+
+		if (processDefinitionId == Addition.procDefId) {
+			Addition.showDepthSelect();
+		} else {
+			Addition.hideDepthSelect();
+		}
 		
 		var ul = ProcessDiagramGenerator.diagramBreadCrumbs.one("ul");
 		ul.find("li").removeClass("selected");

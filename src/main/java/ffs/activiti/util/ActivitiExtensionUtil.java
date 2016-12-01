@@ -52,7 +52,9 @@ public class ActivitiExtensionUtil {
       String flowElementId = properties.get("overrideid").asText();
       if (flowElementId != null && !flowElementId.isEmpty()) {
         // 获取活动
+
         FlowElement flowElement = bpmnModel.getFlowElement(flowElementId);
+
         // 获取活动的扩展元素，在扩展元素属性中添加自定义扩展
         Map<String, List<ExtensionElement>> extensionElements = flowElement.getExtensionElements();
         ArrayList<ExtensionElement> list = new ArrayList<ExtensionElement>();
