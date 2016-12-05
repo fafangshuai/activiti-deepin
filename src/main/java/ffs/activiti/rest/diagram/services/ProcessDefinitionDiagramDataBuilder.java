@@ -32,9 +32,11 @@ import java.util.Map;
  */
 public class ProcessDefinitionDiagramDataBuilder {
   // 重绘子流程的宽
-  private static final int DEFAULT_WIDTH = 100;
+  private static final int COLLAPSED_SUB_PROC_WIDTH = 100;
   // 重绘子流程的高
-  private static final int DEFAULT_HEIGHT = 80;
+  private static final int COLLAPSED_SUB_PROC_HEIGHT = 80;
+  // 默认填充
+  private static final int DEFAULT_PADDING = 20;
   // 字段名常量：活动
   private static final String ACTIVITIES = "activities";
   // 字段名常量：线
@@ -50,9 +52,6 @@ public class ProcessDefinitionDiagramDataBuilder {
   private List<String> highLightedFlows;
   /* 源码中需要的属性，仅仅搬过来 结束*/
 
-  /**
-   * 构造器
-   */
   public ProcessDefinitionDiagramDataBuilder(RepositoryService repositoryService, RuntimeService runtimeService,
                                              ProcessInstance processInstance, String processInstanceId,
                                              Map<String, ObjectNode> subProcessInstanceMap,
@@ -90,7 +89,7 @@ public class ProcessDefinitionDiagramDataBuilder {
    * @param demandDepth 需要的深度
    * @return this
    */
-  public ProcessDefinitionDiagramDataBuilder format(int demandDepth) {
+  public ProcessDefinitionDiagramDataBuilder format(int demandDepth, double scaleRatio) {
     if (root == null) {
       throw new RuntimeException("请先执行构建方法");
     }
@@ -102,6 +101,33 @@ public class ProcessDefinitionDiagramDataBuilder {
     } else { // 操作2 -> 操作1
       repaintActivitiesAndFlows(root, (ArrayNode) root.get(ACTIVITIES), demandDepth);
       flatten(root, (ArrayNode) root.get(ACTIVITIES), demandDepth);
+    }
+    if (scaleRatio > 0) {
+      scale(root, (ArrayNode) root.get(ACTIVITIES), scaleRatio);
+    }
+    return this;
+  }
+
+  /**
+   * 调整整体大小
+   *
+   * @param scaleRatio 缩放比率
+   * @return this
+   */
+  public ProcessDefinitionDiagramDataBuilder scale(ObjectNode root, ArrayNode activityArrNode, double scaleRatio) {
+    for (JsonNode node : activityArrNode) {
+      ObjectNode activityNode = (ObjectNode) node;
+      int width = activityNode.get("width").asInt();
+      int height = activityNode.get("height").asInt();
+      int scaledWidth = (int) (width * scaleRatio);
+      int scaledHeight = (int) (height * scaleRatio);
+      activityNode.put("width", scaledWidth);
+      activityNode.put("height", scaledHeight);
+      //      repaintAndShift(activityNode, root, scaledWidth, scaledHeight);
+      ArrayNode subActivityArrNode = (ArrayNode) activityNode.get(ACTIVITIES);
+      if (subActivityArrNode != null && subActivityArrNode.size() > 0) {
+        scale(activityNode, subActivityArrNode, scaleRatio);
+      }
     }
     return this;
   }
@@ -156,7 +182,7 @@ public class ProcessDefinitionDiagramDataBuilder {
         if (demandDepth <= currentDepth) {
           activityNode.put("isExpanded", false);
           activityNode.put("collapsed", true);
-          shiftActivitiesAndFlows(activityNode, parentNode);
+          repaintAndShift(activityNode, parentNode, COLLAPSED_SUB_PROC_WIDTH, COLLAPSED_SUB_PROC_HEIGHT);
         }
         if (!depthIncrease) {
           repaintCurrDepth += 1;
@@ -174,27 +200,24 @@ public class ProcessDefinitionDiagramDataBuilder {
    * @param activityNode 子流程节点
    * @param parentNode   父节点
    */
-  private void shiftActivitiesAndFlows(ObjectNode activityNode, ObjectNode parentNode) {
+  private void repaintAndShift(ObjectNode activityNode, ObjectNode parentNode, int scaledWidth, int scaledHeight) {
     int width = activityNode.get("width").asInt();
     int height = activityNode.get("height").asInt();
-    int shiftX = 0; // x轴偏移
-    int shiftY = 0; // y轴偏移
-    // 如果子流程宽高比默认的小则不处理，反之重设宽高并计算偏移
-    if (width > DEFAULT_WIDTH) {
-      activityNode.put("width", DEFAULT_WIDTH);
-      activityNode.put("originWidth", width);
-      shiftX = width - DEFAULT_WIDTH;
-    }
-    if (height > DEFAULT_HEIGHT) {
-      activityNode.put("height", DEFAULT_HEIGHT);
-      activityNode.put("originHeight", height);
-      shiftY = height - DEFAULT_HEIGHT;
-    }
-
     int x = activityNode.get("x").asInt();
     int y = activityNode.get("y").asInt();
     int rightBorder = x + width;
     int bottomBorder = y + height;
+    int shiftX = 0; // x轴偏移
+    int shiftY = 0; // y轴偏移
+    // 重设宽高并计算偏移
+    if (width != scaledWidth) {
+      activityNode.put("width", scaledWidth);
+      shiftX = scaledWidth - width;
+    }
+    if (height != scaledHeight) {
+      activityNode.put("height", scaledHeight);
+      shiftY = scaledHeight - height;
+    }
 
     // TODO 重绘父级，级联的情况处理
     boolean isRepaintParent = false;
@@ -220,13 +243,13 @@ public class ProcessDefinitionDiagramDataBuilder {
       int newSiblingY = siblingY;
 
       // 只调整右侧元素
-      if (shiftX > 0 && siblingY > y && siblingX > rightBorder) {
-        newSiblingX = siblingX - shiftX;
+      if (siblingY > y && siblingX > rightBorder) {
+        newSiblingX = siblingX + shiftX;
         sibling.put("x", newSiblingX);
       }
       // 只调整下方元素
-      if (shiftY > 0 && siblingX > x && siblingY > bottomBorder) {
-        newSiblingY = siblingY - shiftY;
+      if (siblingX > x && siblingY > bottomBorder) {
+        newSiblingY = siblingY + shiftY;
         sibling.put("y", newSiblingY);
       }
       if (isRepaintParent) {
@@ -240,9 +263,8 @@ public class ProcessDefinitionDiagramDataBuilder {
     }
 
     if (isRepaintParent) {
-      int padding = 20;
-      parentNode.put("width", parentRightBorder - parentNode.get("x").asInt() + padding);
-      parentNode.put("height", parentBottomBorder - parentNode.get("y").asInt() + padding);
+      parentNode.put("width", parentRightBorder - parentNode.get("x").asInt() + DEFAULT_PADDING);
+      parentNode.put("height", parentBottomBorder - parentNode.get("y").asInt() + DEFAULT_PADDING);
     }
   }
 

@@ -207,7 +207,7 @@ public class BaseProcessDefinitionDiagramLayoutResource {
     }
     new ProcessDefinitionDiagramDataBuilder(repositoryService, runtimeService, processInstance, processInstanceId, subProcessInstanceMap, highLightedFlows)
         .build(responseJSON, processDefinition)
-        .format(demandDepth);
+        .format(demandDepth, 1.0);
 
     return responseJSON;
   }
