@@ -52,6 +52,18 @@ public class ProcessController {
     }
   }
 
+  @RequestMapping("def/delete")
+  @ResponseBody
+  public BaseResponse deleteDef(String deploymentId) {
+    try {
+      repositoryService.deleteDeployment(deploymentId, true);
+      return success();
+    } catch (Exception e) {
+      logger.error(String.format("Delete failed. deploymentId: %s", deploymentId), e);
+      return error();
+    }
+  }
+
   @RequestMapping(value = "list")
   @ResponseBody
   public BaseResponse list() {

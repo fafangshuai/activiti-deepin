@@ -54,7 +54,9 @@ public class ActivitiExtensionUtil {
         // 获取活动
 
         FlowElement flowElement = bpmnModel.getFlowElement(flowElementId);
-
+        if (flowElement == null) {
+          return;
+        }
         // 获取活动的扩展元素，在扩展元素属性中添加自定义扩展
         Map<String, List<ExtensionElement>> extensionElements = flowElement.getExtensionElements();
         ArrayList<ExtensionElement> list = new ArrayList<ExtensionElement>();

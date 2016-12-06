@@ -39,6 +39,7 @@
     <td></td>
     <td>
       <button class="btn btn-primary btn-xs" data-type="view">View</button>
+      <button class="btn btn-primary btn-xs" data-type="delete">Delete</button>
     </td>
   </tr>
 </template>
@@ -84,6 +85,12 @@
     });
   }
 
+  function deleteDefService(deploymentId, callback) {
+    $.post(BASE_URL + "/process/def/delete", {deploymentId: deploymentId}, function (response) {
+      handleResponse(response, callback);
+    });
+  }
+
   function renderTable(list) {
     if (!list || list.length == 0) {
       return;
@@ -103,9 +110,12 @@
         fillTd(tds[j++], item.key);
         fillTd(tds[j++], item.version);
         fillTd(tds[j++], item.deploymentId);
-        $(tds[j++]).find("button[data-type='view']").on("click", {
+        $(tds[j]).find("button[data-type='view']").on("click", {
           procDefId: item.id
         }, diagramViewer);
+        $(tds[j]).find("button[data-type='delete']").on("click", {
+          procDefId: item.id, deploymentId: item.deploymentId
+        }, deleteDef);
         $tbody.append($tr);
       } catch (error) {
         console.error(error);
@@ -119,6 +129,15 @@
 //    $("#diagramViewer").attr("src", url);
 //    $("#diagramModal").modal("show");
     window.open(url);
+  }
+
+  function deleteDef(event) {
+    var deploymentId = event.data.deploymentId;
+    var procDefId = event.data.procDefId;
+    deleteDefService(deploymentId, function () {
+      showMessage("Delete process definition [" + procDefId + "] succeed");
+      loadList();
+    });
   }
 
   function fillTd(td, text) {
