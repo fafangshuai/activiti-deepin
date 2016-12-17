@@ -3,12 +3,14 @@ package ffs.activiti.web;
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ffs.activiti.bean.BaseResponse;
 import ffs.activiti.converter.CustomizeBpmnJsonConverter;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.constants.ModelDataJsonConstants;
+import org.activiti.editor.language.json.converter.BpmnJsonConverterUtil;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +131,7 @@ public class ModelController {
       byte[] bpmnBytes = new BpmnXMLConverter().convertToXML(bpmnModel);
       String processName = model.getName() + ".bpmn20.xml";
       Deployment deployment = repositoryService.createDeployment().name(model.getName())
-          .addString(processName, new String(bpmnBytes, Charset.forName("UTF-8"))).deploy();
+                                               .addString(processName, new String(bpmnBytes, Charset.forName("UTF-8"))).deploy();
       return success(deployment.getId());
     } catch (Exception e) {
       logger.error(String.format("Deploy failed. modelId: %s", modelId), e);
@@ -166,4 +169,44 @@ public class ModelController {
       logger.error("Export file failed. modelId: " + modelId, e);
     }
   }
+
+  /**
+   * 根据模型id获取所有关联模型id
+   *
+   * @param modelId 模型Id
+   */
+  @RequestMapping("getRelatedModels")
+  @ResponseBody
+  public BaseResponse getRelatedModels(String modelId) {
+    try {
+      List<String> relatedModels = new ArrayList<>();
+      relatedModels.add(modelId);
+      ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(modelId));
+      new CustomizeBpmnJsonConverter().convertToBpmnModel(modelNode);
+      ArrayNode childShapes = (ArrayNode) modelNode.get("childShapes");
+      fillModelIds(relatedModels, childShapes);
+      return success(relatedModels);
+    } catch (Exception e) {
+      logger.error(String.format("GetRelatedModels failed. modelId: %s", modelId), e);
+      return error();
+    }
+  }
+
+  /**
+   * 填充模型id列表，递归处理所有子流程
+   *
+   * @param relatedModels 模型id列表
+   * @param childShapes   每个流程的子元素
+   */
+  private void fillModelIds(List<String> relatedModels, ArrayNode childShapes) {
+    for (JsonNode childShape : childShapes) {
+      String stencilId = BpmnJsonConverterUtil.getStencilId(childShape);
+      if ("SubProcess".equals(stencilId)) {
+        String modelRefId = BpmnJsonConverterUtil.getPropertyValueAsString("modelref", childShape);
+        relatedModels.add(modelRefId);
+        fillModelIds(relatedModels, (ArrayNode) childShape.get("childShapes"));
+      }
+    }
+  }
+
 }
