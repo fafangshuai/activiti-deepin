@@ -565,7 +565,9 @@ angular.module('activitiModeler')
             	});
             };
           // extension begin
-          jQuery.addExtensions($scope);
+          $scope.$on("$includeContentLoaded", function () {
+            jQuery.ngPostHandler($scope);
+          });
           // extension end
         }); // end of $scope.editorFactory.promise block
 

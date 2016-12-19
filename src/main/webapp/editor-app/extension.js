@@ -6,6 +6,26 @@
     getRelatedModelsService(renderSelect);
   });
 
+  // 处理查看
+  function handleView() {
+    var palette = $("#paletteHelpWrapper");
+    var canvas = $("#canvasHelpWrapper");
+    var properties = $("#propertiesHelpWrapper");
+    var buttons = jQuery("div.btn-toolbar.pull-left.ng-scope").find("button:lt(2)");
+    if (UrlParam.get("view") == "true") {
+      palette.hide();
+      buttons.hide();
+      canvas.addClass("full-width");
+      properties.addClass("full-width");
+
+    } else {
+      palette.show();
+      buttons.show();
+      canvas.removeClass("full-width");
+      properties.removeClass("full-width");
+    }
+  }
+
   // 初始化下拉框
   function renderSelect(data) {
     var $select = $("#relatedModelsSelect");
@@ -41,15 +61,22 @@
     location.href = location.origin + location.pathname + UrlParam.format();
   }
 
-  jQuery.extend({
-    addExtensions: function (ngScope) {
+  // 注册双击事件
+  function registerDBClickEventOnSubProcRef(ngScope) {
     var editor = ngScope.editor;
-    editor.registerOnEvent("dblclick", function (evenshapet, shapeCls) {
+    editor.registerOnEvent("dblclick", function (event, shapeCls) {
       var shape = shapeCls.toJSON();
       if (shape.stencil.id == "SubProcRef") {
         var modelId = shape.properties.modelref;
         gotoSubProc(modelId);
       }
     });
-  }});
+  }
+
+  jQuery.extend({
+    ngPostHandler: function (ngScope) {
+      registerDBClickEventOnSubProcRef(ngScope);
+      handleView();
+    }
+  });
 })(jQuery);
