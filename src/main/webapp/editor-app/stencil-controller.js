@@ -564,7 +564,9 @@ angular.module('activitiModeler')
             		}
             	});
             };
-
+          // extension begin
+          jQuery.addExtensions($scope);
+          // extension end
         }); // end of $scope.editorFactory.promise block
 
         /* Click handler for clicking a property */

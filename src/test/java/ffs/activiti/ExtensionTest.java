@@ -80,4 +80,25 @@ public class ExtensionTest {
     List<ProcessDefinition> list = repositoryService.createProcessDefinitionQuery().latestVersion().list();
     System.out.println(list);
   }
+
+
+  @Test
+  public void testNestedSubProc() {
+    String key = "test_nested_proc_01";
+    ProcessInstance instance = runtimeService.startProcessInstanceByKey(key);
+    String instanceId = instance.getId();
+    printAndCompleteTasks(instanceId);
+    printAndCompleteTasks(instanceId);
+    printAndCompleteTasks(instanceId);
+    printAndCompleteTasks(instanceId);
+    printAndCompleteTasks(instanceId);
+  }
+
+  private void printAndCompleteTasks(String instanceId) {
+    List<Task> list = taskService.createTaskQuery().processInstanceId(instanceId).list();
+    for (Task task : list) {
+      System.out.println(task);
+      taskService.complete(task.getId());
+    }
+  }
 }

@@ -179,8 +179,9 @@ public class ModelController {
   @ResponseBody
   public BaseResponse getRelatedModels(String modelId) {
     try {
-      List<String> relatedModels = new ArrayList<>();
-      relatedModels.add(modelId);
+      List<Item> relatedModels = new ArrayList<>();
+      Model model = repositoryService.getModel(modelId);
+      relatedModels.add(Item.create(modelId, model.getName()));
       ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(modelId));
       new CustomizeBpmnJsonConverter().convertToBpmnModel(modelNode);
       ArrayNode childShapes = (ArrayNode) modelNode.get("childShapes");
@@ -198,14 +199,43 @@ public class ModelController {
    * @param relatedModels 模型id列表
    * @param childShapes   每个流程的子元素
    */
-  private void fillModelIds(List<String> relatedModels, ArrayNode childShapes) {
+  private void fillModelIds(List<Item> relatedModels, ArrayNode childShapes) {
     for (JsonNode childShape : childShapes) {
       String stencilId = BpmnJsonConverterUtil.getStencilId(childShape);
       if ("SubProcess".equals(stencilId)) {
         String modelRefId = BpmnJsonConverterUtil.getPropertyValueAsString("modelref", childShape);
-        relatedModels.add(modelRefId);
+        String modelRefName = BpmnJsonConverterUtil.getPropertyValueAsString("name", childShape);
+        relatedModels.add(Item.create(modelRefId, modelRefName));
         fillModelIds(relatedModels, (ArrayNode) childShape.get("childShapes"));
       }
+    }
+  }
+
+  private static class Item {
+    private String id;
+    private String name;
+
+    static Item create(String id, String name) {
+      Item item = new Item();
+      item.setId(id);
+      item.setName(name);
+      return item;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
     }
   }
 
