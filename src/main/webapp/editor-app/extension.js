@@ -17,7 +17,6 @@
       buttons.hide();
       canvas.addClass("full-width");
       properties.addClass("full-width");
-
     } else {
       palette.show();
       buttons.show();
@@ -73,7 +72,7 @@
     });
   }
 
-  jQuery.extend({
+  $.extend({
     ngPostHandler: function (ngScope) {
       registerDBClickEventOnSubProcRef(ngScope);
       handleView();
