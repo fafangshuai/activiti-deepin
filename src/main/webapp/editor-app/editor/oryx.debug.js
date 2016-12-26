@@ -4679,7 +4679,12 @@ ORYX.Core.SVG.Label = Clazz.extend({
 								&& this._rotate % 180 != 0 
 								&& this._rotate % 90 == 0 ? 
 										refbb.height : refbb.width);
-						
+						// Extension Begin 自定义属性：文本是否浮动
+						var isFloatText = this.node.getAttributeNS(ORYX.CONFIG.NAMESPACE_ORYX, 'isfloattext');
+						if (isFloatText == "true") {
+							refBoxLength = Math.floor(refBoxLength * 1.8);
+						}
+						// Extension End
 						if (textLength > refBoxLength) {
 						
 							var startIndex = 0;
@@ -4787,8 +4792,11 @@ ORYX.Core.SVG.Label = Clazz.extend({
 							dy -= ORYX.CONFIG.LABEL_LINE_DISTANCE / 2;
 							break;
 						case 'top':
-							dy = index * (fontSize);
-							dy += fontSize;
+							// Extension Begin 调整折叠后文字间距
+							// dy = index * (fontSize);
+							// dy += fontSize;
+							dy = index * 3 + fontSize * (index + 1);
+							// Extension End
 							break;
 					}
 					tspan.setAttributeNS(null, 'dy', Math.floor(dy));

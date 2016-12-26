@@ -31,8 +31,8 @@ public class StencilsetController {
   @RequestMapping(value = "/editor/customize/stencilset", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
   @ResponseBody
   public String getStencilset() {
-    InputStream stencilsetStream = this.getClass().getClassLoader().getResourceAsStream("stencilset.json");
-    InputStream stencilsetExtStream = this.getClass().getClassLoader().getResourceAsStream("stencilset-ext.json");
+    InputStream stencilsetStream = this.getClass().getClassLoader().getResourceAsStream("stencilset-small.json");
+    InputStream stencilsetExtStream = this.getClass().getClassLoader().getResourceAsStream("stencilset-ext-small.json");
     try {
       String rawJson = IOUtils.toString(stencilsetStream, "utf-8");
       String extJson = IOUtils.toString(stencilsetExtStream, "utf-8");
